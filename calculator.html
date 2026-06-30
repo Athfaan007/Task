@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Simple Calculator</title>
+<style>
+  body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    background: #222;
+    font-family: Arial, sans-serif;
+  }
+  .calculator {
+    background: #333;
+    border-radius: 12px;
+    padding: 16px;
+    width: 280px;
+  }
+  #display {
+    width: 100%;
+    height: 60px;
+    font-size: 28px;
+    text-align: right;
+    border: none;
+    border-radius: 8px;
+    margin-bottom: 12px;
+    padding: 0 12px;
+    box-sizing: border-box;
+    background: #111;
+    color: #fff;
+  }
+  .buttons {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+  }
+  button {
+    padding: 18px 0;
+    font-size: 18px;
+    border: none;
+    border-radius: 8px;
+    background: #555;
+    color: #fff;
+    cursor: pointer;
+  }
+  button:hover { background: #666; }
+  .operator { background: #ff9500; }
+  .operator:hover { background: #ffb143; }
+  .equals { grid-column: span 2; background: #ff9500; }
+  .clear { background: #a83232; }
+  .zero { grid-column: span 2; }
+</style>
+</head>
+<body>
+
+<div class="calculator">
+  <input type="text" id="display" value="0" readonly>
+  <div class="buttons">
+    <button class="clear" onclick="clearDisplay()">C</button>
+    <button onclick="toggleSign()">±</button>
+    <button onclick="percent()">%</button>
+    <button class="operator" onclick="setOperator('/')">÷</button>
+
+    <button onclick="inputDigit('7')">7</button>
+    <button onclick="inputDigit('8')">8</button>
+    <button onclick="inputDigit('9')">9</button>
+    <button class="operator" onclick="setOperator('*')">×</button>
+
+    <button onclick="inputDigit('4')">4</button>
+    <button onclick="inputDigit('5')">5</button>
+    <button onclick="inputDigit('6')">6</button>
+    <button class="operator" onclick="setOperator('-')">−</button>
+
+    <button onclick="inputDigit('1')">1</button>
+    <button onclick="inputDigit('2')">2</button>
+    <button onclick="inputDigit('3')">3</button>
+    <button class="operator" onclick="setOperator('+')">+</button>
+
+    <button class="zero" onclick="inputDigit('0')">0</button>
+    <button onclick="inputDigit('.')">.</button>
+    <button class="equals" onclick="calculate()">=</button>
+  </div>
+</div>
+
+<script>
+  let current = '0';
+  let previous = null;
+  let operator = null;
+  let resetNext = false;
+
+  const display = document.getElementById('display');
+
+  function render() {
+    display.value = current;
+  }
+
+  function inputDigit(d) {
+    if (resetNext) {
+      current = '0';
+      resetNext = false;
+    }
+    if (d === '.' && current.includes('.')) return;
+    current = (current === '0' && d !== '.') ? d : current + d;
+    render();
+  }
+
+  function clearDisplay() {
+    current = '0';
+    previous = null;
+    operator = null;
+    resetNext = false;
+    render();
+  }
+
+  function toggleSign() {
+    current = (parseFloat(current) * -1).toString();
+    render();
+  }
+
+  function percent() {
+    current = (parseFloat(current) / 100).toString();
+    render();
+  }
+
+  function setOperator(op) {
+    if (previous !== null && operator && !resetNext) {
+      current = compute(previous, current, operator).toString();
+      render();
+    }
+    previous = current;
+    operator = op;
+    resetNext = true;
+  }
+
+  function compute(a, b, op) {
+    a = parseFloat(a);
+    b = parseFloat(b);
+    let result;
+    switch (op) {
+      case '+': result = a + b; break;
+      case '-': result = a - b; break;
+      case '*': result = a * b; break;
+      case '/': result = b === 0 ? NaN : a / b; break;
+      default: return b;
+    }
+    // round to avoid floating point artifacts like 0.1 + 0.2
+    return Math.round(result * 1e10) / 1e10;
+  }
+
+  function calculate() {
+    if (previous === null || operator === null) return;
+    current = compute(previous, current, operator).toString();
+    previous = null;
+    operator = null;
+    resetNext = true;
+    render();
+  }
+</script>
+
+</body>
+</html>
